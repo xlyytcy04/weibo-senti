@@ -25,7 +25,10 @@ class WeiboDataset(Dataset):
 
 # Load dataset from CSV
 def load_data(path):
-    df = pd.read_csv(path)
+    df = pd.read_csv(path, quoting=1, quotechar='"', escapechar='\\', encoding='utf-8')
+    df = df.dropna(subset=['text', 'label'])  # Remove rows with missing data
+    df['text'] = df['text'].astype(str)
+    df['label'] = df['label'].astype(int)
     return list(df['text']), list(df['label'])
 
 # Metric computation
