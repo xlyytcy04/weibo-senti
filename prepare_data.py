@@ -20,7 +20,7 @@ df_val = df_val[df_val['label'].notna()]
 # encoding labels
 le = LabelEncoder()
 df_train['label'] = le.fit_transform(df_train['label'])
-df_val['label'] = le.transform(df_val['label'])  # 注意：val集必须用 train 的编码器
+df_val['label'] = le.transform(df_val['label'])
 
 # save label mapping
 label_map = {label: int(idx) for label, idx in zip(le.classes_, le.transform(le.classes_))}
