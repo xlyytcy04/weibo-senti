@@ -4,8 +4,6 @@ from torch.utils.data import Dataset
 from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
 from sklearn.metrics import accuracy_score, f1_score
 import argparse
-import os
-import json
 
 # Dataset class for loading tokenized text and labels
 class WeiboDataset(Dataset):
