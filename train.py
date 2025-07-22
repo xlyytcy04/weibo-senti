@@ -60,7 +60,7 @@ def main():
     parser.add_argument("--train_file", type=str, default="train.csv")
     parser.add_argument("--val_file", type=str, default="val.csv")
     parser.add_argument("--epochs", type=int, default=3)
-    parser.add_argument("--batch_size", type=int, default=16)
+    parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--learning_rate", type=float, default=2e-5)
     parser.add_argument(
         "--experiment_tag",
