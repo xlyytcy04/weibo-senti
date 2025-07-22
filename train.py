@@ -12,6 +12,8 @@ import argparse
 import os
 import json
 from datetime import datetime
+import csv
+from glob import glob
 
 
 # Dataset class
@@ -47,6 +49,47 @@ def compute_metrics(pred):
     acc = accuracy_score(labels, preds)
     f1 = f1_score(labels, preds, average="weighted")
     return {"accuracy": acc, "f1": f1}
+
+
+def _collect_experiments(exp_root: str):
+    rows = []
+    for exp_dir in sorted(glob(os.path.join(exp_root, "*"))):
+        args_file = os.path.join(exp_dir, "args.json")
+        metrics_file = os.path.join(exp_dir, "metrics.json")
+        if not (os.path.isfile(args_file) and os.path.isfile(metrics_file)):
+            continue
+        try:
+            with open(args_file, "r", encoding="utf-8") as f:
+                args = json.load(f)
+            with open(metrics_file, "r", encoding="utf-8") as f:
+                metrics = json.load(f)
+        except Exception:
+            continue
+        rows.append({
+            "experiment_dir": exp_dir,
+            "model_name": args.get("model_name", ""),
+            "batch_size": args.get("batch_size", ""),
+            "epochs": args.get("epochs", ""),
+            "learning_rate": args.get("learning_rate", ""),
+            "experiment_tag": args.get("experiment_tag", ""),
+            "accuracy": metrics.get("eval_accuracy", metrics.get("accuracy", "")),
+            "f1": metrics.get("eval_f1", metrics.get("f1", "")),
+        })
+    return rows
+
+
+def aggregate_experiments(exp_root: str = "experiments", csv_path: str = "experiments_summary.csv") -> None:
+    data = _collect_experiments(exp_root)
+    if not data:
+        print("No experiments found.")
+        return
+    header = list(data[0].keys())
+    os.makedirs(os.path.dirname(csv_path) or ".", exist_ok=True)
+    with open(csv_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=header)
+        writer.writeheader()
+        writer.writerows(data)
+    print(f"✅ Aggregated {len(data)} experiments into {csv_path}.")
 
 
 def main():
@@ -153,6 +196,12 @@ def main():
     print("✅ Training complete.")
     print("🧪 Experiment saved to:", experiment_dir)
     print("📊 Final Evaluation:", metrics)
+
+    # Update aggregated CSV log
+    try:
+        aggregate_experiments()
+    except Exception as err:
+        print(f"⚠️ Failed to update experiments_summary.csv: {err}")
 
 
 if __name__ == "__main__":
